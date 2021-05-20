@@ -50,7 +50,7 @@ namespace Terminal.Gui {
 					Curses.move (crow, ccol);
 					needMove = false;
 				}
-				Curses.addch ((int)(uint)MakePrintable(rune));
+				Curses.addch ((int)(uint)MakePrintable (rune));
 			} else
 				needMove = true;
 			if (sync)
@@ -71,13 +71,15 @@ namespace Terminal.Gui {
 				AddRune (rune);
 		}
 
-		public override void Refresh () {
+		public override void Refresh ()
+		{
 			Curses.refresh ();
-			if (Curses.CheckWinChange ()) {
-				Clip = new Rect (0, 0, Cols, Rows);
-				TerminalResized?.Invoke ();
-			}
+			//if (Curses.CheckWinChange ()) {
+			//	Clip = new Rect (0, 0, Cols, Rows);
+			//	TerminalResized?.Invoke ();
+			//}
 		}
+
 		public override void UpdateCursor () => Refresh ();
 
 		public override void End ()
@@ -87,12 +89,20 @@ namespace Terminal.Gui {
 			}
 
 			SetCursorVisibility (CursorVisibility.Default);
-			
+
 			Curses.endwin ();
+
+			// I'm commenting this because was used in a trying to fix the Linux hanging and forgot to exclude it.
 			// Clear and reset entire screen.
-			Console.Out.Write ("\x1b[2J");
-			Console.Out.Flush ();
-			Console.Out.Write ("\x1b[1;25r");
+			//Console.Out.Write ("\x1b[2J");
+			//Console.Out.Flush ();
+
+			// Set top and bottom lines of a window.
+			//Console.Out.Write ("\x1b[1;25r");
+			//Console.Out.Flush ();
+
+			//Set cursor key to cursor.
+			Console.Out.Write ("\x1b[?1l");
 			Console.Out.Flush ();
 		}
 
@@ -100,14 +110,15 @@ namespace Terminal.Gui {
 
 		int currentAttribute;
 
-		public override void SetAttribute (Attribute c) {
+		public override void SetAttribute (Attribute c)
+		{
 			currentAttribute = c.Value;
 			Curses.attrset (currentAttribute);
 		}
 
 		public Curses.Window window;
 
-		static short last_color_pair = 16;
+		//static short last_color_pair = 16;
 
 		/// <summary>
 		/// Creates a curses color from the provided foreground and background colors
@@ -117,12 +128,15 @@ namespace Terminal.Gui {
 		/// <returns></returns>
 		public static Attribute MakeColor (short foreground, short background)
 		{
-			Curses.InitColorPair (++last_color_pair, foreground, background);
+			var v = (short)((int)foreground | background << 4);
+			//Curses.InitColorPair (++last_color_pair, foreground, background);
+			Curses.InitColorPair (v, foreground, background);
 			return new Attribute (
-				value: Curses.ColorPair (last_color_pair),
+				//value: Curses.ColorPair (last_color_pair),
+				value: Curses.ColorPair (v),
 				foreground: (Color)foreground,
-				background: (Color)background
-				);
+				background: (Color)background);
+
 		}
 
 		int [,] colorPairs = new int [16, 16];
@@ -133,9 +147,9 @@ namespace Terminal.Gui {
 			int b = (short)background;
 			var v = colorPairs [f, b];
 			if ((v & 0x10000) == 0) {
-				b = b & 0x7;
+				b &= 0x7;
 				bool bold = (f & 0x8) != 0;
-				f = f & 0x7;
+				f &= 0x7;
 
 				v = MakeColor ((short)f, (short)b) | (bold ? Curses.A_BOLD : 0);
 				colorPairs [(int)foreground, (int)background] = v | 0x1000;
@@ -146,7 +160,7 @@ namespace Terminal.Gui {
 		Dictionary<int, int> rawPairs = new Dictionary<int, int> ();
 		public override void SetColors (short foreColorId, short backgroundColorId)
 		{
-			int key = (((ushort)foreColorId << 16)) | (ushort)backgroundColorId;
+			int key = ((ushort)foreColorId << 16) | (ushort)backgroundColorId;
 			if (!rawPairs.TryGetValue (key, out var v)) {
 				v = MakeColor (foreColorId, backgroundColorId);
 				rawPairs [key] = v;
@@ -266,7 +280,7 @@ namespace Terminal.Gui {
 				if (cev.ButtonState == Curses.Event.ReportMousePosition) {
 					mouseFlag = MapCursesButton ((Curses.Event)LastMouseButtonPressed) | MouseFlags.ReportMousePosition;
 					point = new Point ();
-					//cancelButtonClicked = true;
+					cancelButtonClicked = true;
 				} else {
 					point = new Point () {
 						X = cev.X,
@@ -667,12 +681,14 @@ namespace Terminal.Gui {
 			//}
 		}
 
+		Action<KeyEvent> keyHandler;
 		Action<MouseEvent> mouseHandler;
 
 		public override void PrepareToRun (MainLoop mainLoop, Action<KeyEvent> keyHandler, Action<KeyEvent> keyDownHandler, Action<KeyEvent> keyUpHandler, Action<MouseEvent> mouseHandler)
 		{
 			// Note: Curses doesn't support keydown/up events and thus any passed keyDown/UpHandlers will never be called
 			Curses.timeout (0);
+			this.keyHandler = keyHandler;
 			this.mouseHandler = mouseHandler;
 
 			var mLoop = mainLoop.Driver as UnixMainLoop;
@@ -682,6 +698,12 @@ namespace Terminal.Gui {
 				return true;
 			});
 
+			mLoop.WinChanged += () => {
+				if (Curses.CheckWinChange ()) {
+					Clip = new Rect (0, 0, Cols, Rows);
+					TerminalResized?.Invoke ();
+				}
+			};
 		}
 
 		Curses.Event oldMouseEvents, reportableMouseEvents;
@@ -691,6 +713,10 @@ namespace Terminal.Gui {
 				return;
 
 			try {
+				//Set cursor key to application.
+				Console.Out.Write ("\x1b[?1h");
+				Console.Out.Flush ();
+
 				window = Curses.initscr ();
 			} catch (Exception e) {
 				Console.WriteLine ("Curses failed to initialize, the exception is: " + e);
@@ -700,23 +726,23 @@ namespace Terminal.Gui {
 			// We are setting Invisible as default so we could ignore XTerm DECSUSR setting
 			//
 			switch (Curses.curs_set (0)) {
-				case 0:		
-					currentCursorVisibility = initialCursorVisibility = CursorVisibility.Invisible;	
-					break;
+			case 0:
+				currentCursorVisibility = initialCursorVisibility = CursorVisibility.Invisible;
+				break;
 
-				case 1:		
-					currentCursorVisibility = initialCursorVisibility = CursorVisibility.Underline;	
-					Curses.curs_set (1); 
-					break;
+			case 1:
+				currentCursorVisibility = initialCursorVisibility = CursorVisibility.Underline;
+				Curses.curs_set (1);
+				break;
 
-				case 2:		
-					currentCursorVisibility = initialCursorVisibility = CursorVisibility.Box;		
-					Curses.curs_set (2); 
-					break;
+			case 2:
+				currentCursorVisibility = initialCursorVisibility = CursorVisibility.Box;
+				Curses.curs_set (2);
+				break;
 
-				default:	
-					currentCursorVisibility = initialCursorVisibility = null;						
-					break;
+			default:
+				currentCursorVisibility = initialCursorVisibility = null;
+				break;
 			}
 
 			Curses.raw ();
@@ -758,33 +784,33 @@ namespace Terminal.Gui {
 				Colors.TopLevel.Normal = MakeColor (Curses.COLOR_GREEN, Curses.COLOR_BLACK);
 				Colors.TopLevel.Focus = MakeColor (Curses.COLOR_WHITE, Curses.COLOR_CYAN);
 				Colors.TopLevel.HotNormal = MakeColor (Curses.COLOR_YELLOW, Curses.COLOR_BLACK);
-				Colors.TopLevel.HotFocus = MakeColor (Curses.COLOR_YELLOW, Curses.COLOR_CYAN);
+				Colors.TopLevel.HotFocus = MakeColor (Curses.COLOR_BLUE, Curses.COLOR_CYAN);
 
 				Colors.Base.Normal = MakeColor (Curses.COLOR_WHITE, Curses.COLOR_BLUE);
-				Colors.Base.Focus = MakeColor (Curses.COLOR_BLACK, Curses.COLOR_CYAN);
-				Colors.Base.HotNormal = Curses.A_BOLD | MakeColor (Curses.COLOR_YELLOW, Curses.COLOR_BLUE);
-				Colors.Base.HotFocus = Curses.A_BOLD | MakeColor (Curses.COLOR_YELLOW, Curses.COLOR_CYAN);
+				Colors.Base.Focus = MakeColor (Curses.COLOR_BLACK, Curses.COLOR_WHITE);
+				Colors.Base.HotNormal = MakeColor (Curses.COLOR_CYAN, Curses.COLOR_BLUE);
+				Colors.Base.HotFocus = Curses.A_BOLD | MakeColor (Curses.COLOR_BLUE, Curses.COLOR_GRAY);
 
 				// Focused,
 				//    Selected, Hot: Yellow on Black
 				//    Selected, text: white on black
 				//    Unselected, hot: yellow on cyan
 				//    unselected, text: same as unfocused
-				Colors.Menu.HotFocus = Curses.A_BOLD | MakeColor (Curses.COLOR_YELLOW, Curses.COLOR_BLACK);
+				Colors.Menu.Normal = Curses.A_BOLD | MakeColor (Curses.COLOR_WHITE, Curses.COLOR_GRAY);
 				Colors.Menu.Focus = Curses.A_BOLD | MakeColor (Curses.COLOR_WHITE, Curses.COLOR_BLACK);
-				Colors.Menu.HotNormal = Curses.A_BOLD | MakeColor (Curses.COLOR_YELLOW, Curses.COLOR_CYAN);
-				Colors.Menu.Normal = Curses.A_BOLD | MakeColor (Curses.COLOR_WHITE, Curses.COLOR_CYAN);
-				Colors.Menu.Disabled = MakeColor (Curses.COLOR_WHITE, Curses.COLOR_CYAN);
+				Colors.Menu.HotNormal = Curses.A_BOLD | MakeColor (Curses.COLOR_YELLOW, Curses.COLOR_GRAY);
+				Colors.Menu.HotFocus = Curses.A_BOLD | MakeColor (Curses.COLOR_YELLOW, Curses.COLOR_BLACK);
+				Colors.Menu.Disabled = MakeColor (Curses.COLOR_WHITE, Curses.COLOR_GRAY);
 
 				Colors.Dialog.Normal = MakeColor (Curses.COLOR_BLACK, Curses.COLOR_WHITE);
-				Colors.Dialog.Focus = MakeColor (Curses.COLOR_BLACK, Curses.COLOR_CYAN);
+				Colors.Dialog.Focus = MakeColor (Curses.COLOR_WHITE, Curses.COLOR_GRAY);
 				Colors.Dialog.HotNormal = MakeColor (Curses.COLOR_BLUE, Curses.COLOR_WHITE);
-				Colors.Dialog.HotFocus = MakeColor (Curses.COLOR_BLUE, Curses.COLOR_CYAN);
+				Colors.Dialog.HotFocus = MakeColor (Curses.COLOR_BLUE, Curses.COLOR_GRAY);
 
-				Colors.Error.Normal = Curses.A_BOLD | MakeColor (Curses.COLOR_WHITE, Curses.COLOR_RED);
-				Colors.Error.Focus = MakeColor (Curses.COLOR_BLACK, Curses.COLOR_WHITE);
-				Colors.Error.HotNormal = Curses.A_BOLD | MakeColor (Curses.COLOR_YELLOW, Curses.COLOR_RED);
-				Colors.Error.HotFocus = Colors.Error.HotNormal;
+				Colors.Error.Normal = MakeColor (Curses.COLOR_RED, Curses.COLOR_WHITE);
+				Colors.Error.Focus = Curses.A_BOLD | MakeColor (Curses.COLOR_WHITE, Curses.COLOR_RED);
+				Colors.Error.HotNormal = MakeColor (Curses.COLOR_BLACK, Curses.COLOR_WHITE);
+				Colors.Error.HotFocus = Curses.A_BOLD | MakeColor (Curses.COLOR_BLACK, Curses.COLOR_RED);
 			} else {
 				Colors.TopLevel.Normal = Curses.COLOR_GREEN;
 				Colors.TopLevel.Focus = Curses.COLOR_WHITE;
@@ -829,21 +855,22 @@ namespace Terminal.Gui {
 			case Color.Gray:
 				return Curses.COLOR_WHITE;
 			case Color.DarkGray:
-				return Curses.COLOR_BLACK | Curses.A_BOLD;
+				//return Curses.COLOR_BLACK | Curses.A_BOLD;
+				return Curses.COLOR_GRAY;
 			case Color.BrightBlue:
-				return Curses.COLOR_BLUE | Curses.A_BOLD;
+				return Curses.COLOR_BLUE | Curses.A_BOLD | Curses.COLOR_GRAY;
 			case Color.BrightGreen:
-				return Curses.COLOR_GREEN | Curses.A_BOLD;
-			case Color.BrighCyan:
-				return Curses.COLOR_CYAN | Curses.A_BOLD;
+				return Curses.COLOR_GREEN | Curses.A_BOLD | Curses.COLOR_GRAY;
+			case Color.BrightCyan:
+				return Curses.COLOR_CYAN | Curses.A_BOLD | Curses.COLOR_GRAY;
 			case Color.BrightRed:
-				return Curses.COLOR_RED | Curses.A_BOLD;
+				return Curses.COLOR_RED | Curses.A_BOLD | Curses.COLOR_GRAY;
 			case Color.BrightMagenta:
-				return Curses.COLOR_MAGENTA | Curses.A_BOLD;
+				return Curses.COLOR_MAGENTA | Curses.A_BOLD | Curses.COLOR_GRAY;
 			case Color.BrightYellow:
-				return Curses.COLOR_YELLOW | Curses.A_BOLD;
+				return Curses.COLOR_YELLOW | Curses.A_BOLD | Curses.COLOR_GRAY;
 			case Color.White:
-				return Curses.COLOR_WHITE | Curses.A_BOLD;
+				return Curses.COLOR_WHITE | Curses.A_BOLD | Curses.COLOR_GRAY;
 			}
 			throw new ArgumentException ("Invalid color code");
 		}
@@ -915,13 +942,13 @@ namespace Terminal.Gui {
 		/// <inheritdoc/>
 		public override bool SetCursorVisibility (CursorVisibility visibility)
 		{
-			if (initialCursorVisibility.HasValue == false) 
+			if (initialCursorVisibility.HasValue == false)
 				return false;
 
-			Curses.curs_set (((int) visibility >> 16) & 0x000000FF);
+			Curses.curs_set (((int)visibility >> 16) & 0x000000FF);
 
 			if (visibility != CursorVisibility.Invisible) {
-				Console.Out.Write ("\x1b[{0} q", ((int) visibility >> 24) & 0xFF);
+				Console.Out.Write ("\x1b[{0} q", ((int)visibility >> 24) & 0xFF);
 				Console.Out.Flush ();
 			}
 
@@ -934,6 +961,28 @@ namespace Terminal.Gui {
 		public override bool EnsureCursorVisibility ()
 		{
 			return false;
+		}
+
+		public override void SendKeys (char keyChar, ConsoleKey key, bool shift, bool alt, bool control)
+		{
+			Key k;
+
+			if ((shift || alt || control)
+				&& keyChar - (int)Key.Space >= (uint)Key.A && keyChar - (int)Key.Space <= (uint)Key.Z) {
+				k = (Key)(keyChar - (uint)Key.Space);
+			} else {
+				k = (Key)keyChar;
+			}
+			if (shift) {
+				k |= Key.ShiftMask;
+			}
+			if (alt) {
+				k |= Key.AltMask;
+			}
+			if (control) {
+				k |= Key.CtrlMask;
+			}
+			keyHandler (new KeyEvent (k, MapKeyModifiers (k)));
 		}
 	}
 

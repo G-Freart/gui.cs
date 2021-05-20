@@ -22,6 +22,7 @@ namespace UICatalog.Scenarios {
 		private MenuItem miHeaderUnderline;
 		private MenuItem miCellLines;
 		private MenuItem miFullRowSelect;
+		private MenuItem miExpandLastColumn;
 
 		public override void Setup ()
 		{
@@ -51,6 +52,7 @@ namespace UICatalog.Scenarios {
 					miHeaderUnderline =new MenuItem ("_HeaderUnderLine", "", () => ToggleUnderline()){Checked = tableView.Style.ShowHorizontalHeaderUnderline, CheckType = MenuItemCheckStyle.Checked },
 					miFullRowSelect =new MenuItem ("_FullRowSelect", "", () => ToggleFullRowSelect()){Checked = tableView.FullRowSelect, CheckType = MenuItemCheckStyle.Checked },
 					miCellLines =new MenuItem ("_CellLines", "", () => ToggleCellLines()){Checked = tableView.Style.ShowVerticalCellLines, CheckType = MenuItemCheckStyle.Checked },
+					miExpandLastColumn = new MenuItem ("_ExpandLastColumn", "", () => ToggleExpandLastColumn()){Checked = tableView.Style.ExpandLastColumn, CheckType = MenuItemCheckStyle.Checked },
 					new MenuItem ("_AllLines", "", () => ToggleAllCellLines()),
 					new MenuItem ("_NoLines", "", () => ToggleNoCellLines()),
 					new MenuItem ("_ClearColumnStyles", "", () => ClearColumnStyles()),
@@ -181,6 +183,15 @@ namespace UICatalog.Scenarios {
 			tableView.FullRowSelect= miFullRowSelect.Checked;
 			tableView.Update();
 		}
+
+		private void ToggleExpandLastColumn()
+		{
+			miExpandLastColumn.Checked = !miExpandLastColumn.Checked;
+			tableView.Style.ExpandLastColumn = miExpandLastColumn.Checked;
+
+			tableView.Update();
+
+		}
 		private void ToggleCellLines()
 		{
 			miCellLines.Checked = !miCellLines.Checked;
@@ -235,19 +246,19 @@ namespace UICatalog.Scenarios {
 
 		private void SetDemoTableStyles ()
 		{
-			var alignMid = new ColumnStyle() {
+			var alignMid = new TableView.ColumnStyle () {
 				Alignment = TextAlignment.Centered
 			};
-			var alignRight = new ColumnStyle() {
+			var alignRight = new TableView.ColumnStyle () {
 				Alignment = TextAlignment.Right
 			};
 
-			var dateFormatStyle = new ColumnStyle() {
+			var dateFormatStyle = new TableView.ColumnStyle () {
 				Alignment = TextAlignment.Right,
 				RepresentationGetter = (v)=> v is DateTime d ? d.ToString("yyyy-MM-dd"):v.ToString()
 			};
 
-			var negativeRight = new ColumnStyle() {
+			var negativeRight = new TableView.ColumnStyle () {
 				
 				Format = "0.##",
 				MinWidth = 10,
@@ -273,7 +284,7 @@ namespace UICatalog.Scenarios {
 			tableView.Table = BuildSimpleDataTable(big ? 30 : 5, big ? 1000 : 5);
 		}
 
-		private void EditCurrentCell (CellActivatedEventArgs e)
+		private void EditCurrentCell (TableView.CellActivatedEventArgs e)
 		{
 			if(e.Table == null)
 				return;

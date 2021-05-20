@@ -63,7 +63,7 @@ namespace UICatalog {
 		private static Scenario _runningScenario = null;
 		private static bool _useSystemConsole = false;
 		private static ConsoleDriver.DiagnosticFlags _diagnosticFlags;
-		private static bool _heightAsBuffer;
+		private static bool _heightAsBuffer = false;
 		private static bool _alwaysSetPosition;
 
 		static void Main (string [] args)
@@ -162,7 +162,7 @@ namespace UICatalog {
 			aboutMessage.AppendLine (@" |___/                   ");
 			aboutMessage.AppendLine ("");
 			aboutMessage.AppendLine ($"Version: {typeof (UICatalogApp).Assembly.GetName ().Version}");
-			aboutMessage.AppendLine ($"Using Terminal.Gui Version: {typeof (Terminal.Gui.Application).Assembly.GetName ().Version}");
+			aboutMessage.AppendLine ($"Using Terminal.Gui Version: {FileVersionInfo.GetVersionInfo (typeof (Terminal.Gui.Application).Assembly.Location).ProductVersion}");
 			aboutMessage.AppendLine ("");
 
 			_menu = new MenuBar (new MenuBarItem [] {

@@ -5,12 +5,12 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class CellActivatedEventArgs
+    <title>Class TabView.Tab
    </title>
     <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class CellActivatedEventArgs
+    <meta name="title" content="Class TabView.Tab
    ">
-    <meta name="generator" content="docfx 2.56.6.0">
+    <meta name="generator" content="docfx 2.56.7.0">
     
     <link rel="shortcut icon" href="../../favicon.ico">
     <link rel="stylesheet" href="../../styles/docfx.vendor.css">
@@ -78,26 +78,22 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="Terminal.Gui.CellActivatedEventArgs">
+            <article class="content wrap" id="_content" data-uid="Terminal.Gui.TabView.Tab">
   
   
-  <h1 id="Terminal_Gui_CellActivatedEventArgs" data-uid="Terminal.Gui.CellActivatedEventArgs" class="text-break">Class CellActivatedEventArgs
+  <h1 id="Terminal_Gui_TabView_Tab" data-uid="Terminal.Gui.TabView.Tab" class="text-break">Class TabView.Tab
   </h1>
   <div class="markdown level0 summary">
-Defines the event arguments for <a class="xref" href="Terminal.Gui.TableView.html#Terminal_Gui_TableView_CellActivated">CellActivated</a> event
+A single tab in a <a class="xref" href="Terminal.Gui.TabView.html">TabView</a>
 </div>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
     <div class="level0"><span class="xref">System.Object</span></div>
-    <div class="level1"><span class="xref">System.EventArgs</span></div>
-    <div class="level2"><span class="xref">CellActivatedEventArgs</span></div>
+    <div class="level1"><span class="xref">TabView.Tab</span></div>
   </div>
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
-    <div>
-      <span class="xref">System.EventArgs.Empty</span>
-    </div>
     <div>
       <span class="xref">System.Object.Equals(System.Object)</span>
     </div>
@@ -122,23 +118,35 @@ Defines the event arguments for <a class="xref" href="Terminal.Gui.TableView.htm
   </div>
   <h6><strong>Namespace</strong>: <a class="xref" href="Terminal.Gui.html">Terminal.Gui</a></h6>
   <h6><strong>Assembly</strong>: Terminal.Gui.dll</h6>
-  <h5 id="Terminal_Gui_CellActivatedEventArgs_syntax">Syntax</h5>
+  <h5 id="Terminal_Gui_TabView_Tab_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public class CellActivatedEventArgs : EventArgs</code></pre>
+    <pre><code class="lang-csharp hljs">public class Tab</code></pre>
   </div>
   <h3 id="constructors">Constructors
   </h3>
   
   
-  <a id="Terminal_Gui_CellActivatedEventArgs__ctor_" data-uid="Terminal.Gui.CellActivatedEventArgs.#ctor*"></a>
-  <h4 id="Terminal_Gui_CellActivatedEventArgs__ctor_System_Data_DataTable_System_Int32_System_Int32_" data-uid="Terminal.Gui.CellActivatedEventArgs.#ctor(System.Data.DataTable,System.Int32,System.Int32)">CellActivatedEventArgs(DataTable, Int32, Int32)</h4>
+  <a id="Terminal_Gui_TabView_Tab__ctor_" data-uid="Terminal.Gui.TabView.Tab.#ctor*"></a>
+  <h4 id="Terminal_Gui_TabView_Tab__ctor" data-uid="Terminal.Gui.TabView.Tab.#ctor">Tab()</h4>
   <div class="markdown level1 summary">
-Creates a new instance of arguments describing a cell being activated in <a class="xref" href="Terminal.Gui.TableView.html">TableView</a>
+Creates a new unamed tab with no controls inside
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public CellActivatedEventArgs(DataTable t, int col, int row)</code></pre>
+    <pre><code class="lang-csharp hljs">public Tab()</code></pre>
+  </div>
+  
+  
+  <a id="Terminal_Gui_TabView_Tab__ctor_" data-uid="Terminal.Gui.TabView.Tab.#ctor*"></a>
+  <h4 id="Terminal_Gui_TabView_Tab__ctor_System_String_Terminal_Gui_View_" data-uid="Terminal.Gui.TabView.Tab.#ctor(System.String,Terminal.Gui.View)">Tab(String, View)</h4>
+  <div class="markdown level1 summary">
+Creates a new tab with the given text hosting a view
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Tab(string text, View view)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -151,18 +159,13 @@ Creates a new instance of arguments describing a cell being activated in <a clas
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Data.DataTable</span></td>
-        <td><span class="parametername">t</span></td>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">text</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
-        <td><span class="parametername">col</span></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><span class="xref">System.Int32</span></td>
-        <td><span class="parametername">row</span></td>
+        <td><a class="xref" href="Terminal.Gui.View.html">View</a></td>
+        <td><span class="parametername">view</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -171,15 +174,15 @@ Creates a new instance of arguments describing a cell being activated in <a clas
   </h3>
   
   
-  <a id="Terminal_Gui_CellActivatedEventArgs_Col_" data-uid="Terminal.Gui.CellActivatedEventArgs.Col*"></a>
-  <h4 id="Terminal_Gui_CellActivatedEventArgs_Col" data-uid="Terminal.Gui.CellActivatedEventArgs.Col">Col</h4>
+  <a id="Terminal_Gui_TabView_Tab_Text_" data-uid="Terminal.Gui.TabView.Tab.Text*"></a>
+  <h4 id="Terminal_Gui_TabView_Tab_Text" data-uid="Terminal.Gui.TabView.Tab.Text">Text</h4>
   <div class="markdown level1 summary">
-The column index of the <a class="xref" href="Terminal.Gui.CellActivatedEventArgs.html#Terminal_Gui_CellActivatedEventArgs_Table">Table</a> cell that is being activated
+The text to display in a <a class="xref" href="Terminal.Gui.TabView.html">TabView</a>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public int Col { get; }</code></pre>
+    <pre><code class="lang-csharp hljs">public ustring Text { get; set; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -191,22 +194,22 @@ The column index of the <a class="xref" href="Terminal.Gui.CellActivatedEventArg
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">NStack.ustring</span></td>
         <td></td>
       </tr>
     </tbody>
   </table>
   
   
-  <a id="Terminal_Gui_CellActivatedEventArgs_Row_" data-uid="Terminal.Gui.CellActivatedEventArgs.Row*"></a>
-  <h4 id="Terminal_Gui_CellActivatedEventArgs_Row" data-uid="Terminal.Gui.CellActivatedEventArgs.Row">Row</h4>
+  <a id="Terminal_Gui_TabView_Tab_View_" data-uid="Terminal.Gui.TabView.Tab.View*"></a>
+  <h4 id="Terminal_Gui_TabView_Tab_View" data-uid="Terminal.Gui.TabView.Tab.View">View</h4>
   <div class="markdown level1 summary">
-The row index of the <a class="xref" href="Terminal.Gui.CellActivatedEventArgs.html#Terminal_Gui_CellActivatedEventArgs_Table">Table</a> cell that is being activated
+The control to display when the tab is selected
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public int Row { get; }</code></pre>
+    <pre><code class="lang-csharp hljs">public View View { get; set; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -218,34 +221,7 @@ The row index of the <a class="xref" href="Terminal.Gui.CellActivatedEventArgs.h
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-  
-  
-  <a id="Terminal_Gui_CellActivatedEventArgs_Table_" data-uid="Terminal.Gui.CellActivatedEventArgs.Table*"></a>
-  <h4 id="Terminal_Gui_CellActivatedEventArgs_Table" data-uid="Terminal.Gui.CellActivatedEventArgs.Table">Table</h4>
-  <div class="markdown level1 summary">
-The current table to which the new indexes refer.  May be null e.g. if selection change is the result of clearing the table from the view
-</div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public DataTable Table { get; }</code></pre>
-  </div>
-  <h5 class="propertyValue">Property Value</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="xref">System.Data.DataTable</span></td>
+        <td><a class="xref" href="Terminal.Gui.View.html">View</a></td>
         <td></td>
       </tr>
     </tbody>
